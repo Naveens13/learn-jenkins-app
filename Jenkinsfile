@@ -95,6 +95,7 @@ pipeline {
             steps{
                 sh '''
                     echo "This is a scheduled build triggred by jenkins."
+                    echo "Just adding another line"
                 '''
             }
         }
