@@ -79,13 +79,16 @@ pipeline {
                     reuseNode true
                 }
             }
+            environment {
+                CI_ENVIRONMENT_URL = "still not defined"
+            }
             steps {
                 sh '''
                     npm install netlify-cli node-jq
                     node_modules/.bin/netlify --version
                     node_modules/.bin/netlify status
                     node_modules/.bin/netlify deploy --dir=build --json > deploy_output_staging.json
-                    CI_ENVIRONMENT_URL=$("node_modules/.bin/node-jq -r '.deploy_url' deploy_output_staging.json")
+                    CI_ENVIRONMENT_URL=$(node_modules/.bin/node-jq -r '.deploy_url' deploy_output_staging.json)
                     npx playwright test --reporter=html
                 '''
             }   
