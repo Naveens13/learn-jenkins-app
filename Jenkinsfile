@@ -5,6 +5,7 @@ pipeline {
         NETLIFY_AUTH_TOKEN = credentials('netlify_access_token')
     }
     stages {
+        /*
         stage('Build') {
             agent {
                 docker {
@@ -70,25 +71,28 @@ pipeline {
                 }
             }
         }
-
-        stage('Netlify Staging Deploy') {
+        */
+        stage('Netlify Staging Deploy & E2E Test') {
             agent {
                 docker {
-                    image 'node:18-alpine'
+                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
                     reuseNode true
                 }
             }
             steps {
                 sh '''
-                    echo "Inside Netlify - staging"
-                    npm install netlify-cli
+                    npm install netlify-cli node-jq
                     node_modules/.bin/netlify --version
                     node_modules/.bin/netlify status
-                    node_modules/.bin/netlify deploy --dir=build 
-
-                    npm install node-jq
-                    node_modules/.bin/node-jq --version
+                    node_modules/.bin/netlify deploy --dir=build --json > deploy_output_staging.json
+                    CI_ENVIRONMENT_URL=$("node_modules/.bin/node-jq -r '.deploy_url' deploy_output_staging.json")
+                    npx playwright test --reporter=html
                 '''
+            }   
+            post {
+                always {
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Netlify Staging HTML Report', reportTitles: '', useWrapperFileDirectly: true])
+                }
             }
         }
 
