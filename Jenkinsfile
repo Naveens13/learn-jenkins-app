@@ -27,7 +27,7 @@
 
             stage('Test'){
                 parallel{
-                    stage('Test') {
+                    stage('Unit Test') {
                 agent {
                     docker {
                         image 'node:18-alpine'
@@ -43,7 +43,7 @@
                 }
             }
 
-            stage('E2E') {
+            stage('E2E Test') {
                 agent {
                     docker {
                         image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
@@ -72,9 +72,10 @@
                 }
                 steps {
                     sh '''
-                        echo "Inside netlify build......"
+                        echo "Inside netlify build......$NETLIFY_SITE_ID -- $NETLIFY_ACCESS_TOKEN"
                         npm install netlify-cli
                         node_modules/.bin/netlify --version
+                        node_modules/.bin/netlify status
                     '''
                 }
             }
