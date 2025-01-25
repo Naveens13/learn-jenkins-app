@@ -71,7 +71,7 @@ pipeline {
             }
         }
 
-        stage('Netlify_deploy') {
+        stage('Netlify Staging Deploy') {
             agent {
                 docker {
                     image 'node:18-alpine'
@@ -80,7 +80,25 @@ pipeline {
             }
             steps {
                 sh '''
-                    echo "Inside netlify build......$NETLIFY_SITE_ID -- $NETLIFY_AUTH_TOKEN"
+                    echo "Inside Netlify - staging"
+                    npm install netlify-cli
+                    node_modules/.bin/netlify --version
+                    node_modules/.bin/netlify status
+                    node_modules/.bin/netlify deploy --dir=build
+                '''
+            }
+        }
+
+        stage('Netlify Production Deploy') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    reuseNode true
+                }
+            }
+            steps {
+                sh '''
+                    echo "Inside Netlify - Production"
                     npm install netlify-cli
                     node_modules/.bin/netlify --version
                     node_modules/.bin/netlify status
