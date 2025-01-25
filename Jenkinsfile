@@ -24,8 +24,8 @@ pipeline {
             }
         }
 
-        stage('Test'){
-            parallel{
+        stage('Test') {
+            parallel { 
                 stage('Unit Test') {
                     agent {
                         docker {
@@ -33,6 +33,7 @@ pipeline {
                             reuseNode true
                         }
                     }
+                    
                     steps {
                         sh '''
                             #test -f build/index.html
@@ -45,6 +46,7 @@ pipeline {
                         }
                     }
                 }
+
                 stage('E2E Test') {
                     agent {
                         docker {
@@ -59,16 +61,16 @@ pipeline {
                             sleep 10
                             npx playwright test --reporter=html
                         '''
-                        post {
-                            always {
-                                publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
-                            }
+                    }   
+                    post {
+                        always {
+                            publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright HTML Report', reportTitles: '', useWrapperFileDirectly: true])
                         }
                     }
                 }
             }
         }
-        
+
         stage('Netlify_deploy') {
             agent {
                 docker {
