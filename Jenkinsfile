@@ -34,17 +34,18 @@
                             }
                         }
 
-                    steps {
-                        sh '''
-                            #test -f build/index.html
-                            npm test
-                        '''
+                        steps {
+                            sh '''
+                                #test -f build/index.html
+                                npm test
+                            '''
+                        }
+                        post {
+                            always {
+                                junit 'jest-results/junit.xml'
+                            }
+                        }
                     }
-                    post {
-                        always {
-                            junit 'jest-results/junit.xml'
-                    }
-                }
                     stage('E2E Test') {
                         agent {
                             docker {
