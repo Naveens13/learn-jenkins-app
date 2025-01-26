@@ -7,19 +7,23 @@ pipeline {
     }
     stages {
 
+        stage ('Docker Build') {
+            sh ''' 
+                echo "Building Docker image"
+                docker build -t my-node-image .
+            '''
+        }
 
         stage('Build') {
             agent {
                 docker {
-                    image 'node:18-alpine'
+                    image 'my-node-image'
                     reuseNode true
                 }
             }
             steps {
                 sh '''
                     ls -la
-                    node --version
-                    npm --version
                     npm ci
                     npm run build
                     ls -la
@@ -27,13 +31,12 @@ pipeline {
             }
         }
 
-        /*
         stage('Test') {
             parallel { 
                 stage('Unit Test') {
                     agent {
                         docker {
-                            image 'node:18-alpine'
+                            image 'my-node-image'
                             reuseNode true
                         }
                     }
@@ -54,14 +57,13 @@ pipeline {
                 stage('E2E Test') {
                     agent {
                         docker {
-                            image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                            image 'my-node-image'
                             reuseNode true
                         }
                     }
                     steps {
                         sh '''
-                            npm install serve
-                            node_modules/.bin/serve -s build &
+                            serve -s build &
                             sleep 10
                             npx playwright test --reporter=html
                         '''
@@ -74,12 +76,11 @@ pipeline {
                 }
             }
         }
-        */
 
         stage('Netlify Staging Deploy & E2E Test') {
             agent {
                 docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    image 'my-node-image'
                     reuseNode true
                 }
             }
@@ -89,11 +90,9 @@ pipeline {
             steps {
                 sh '''
                     echo "Build id is: $REACT_APP_VERSION"
-                    npm install netlify-cli node-jq
-                    node_modules/.bin/netlify --version
-                    node_modules/.bin/netlify status
-                    node_modules/.bin/netlify deploy --dir=build --json > deploy_output_staging.json
-                    CI_ENVIRONMENT_URL=$(node_modules/.bin/node-jq -r '.deploy_url' deploy_output_staging.json)
+                    netlify status
+                    netlify deploy --dir=build --json > deploy_output_staging.json
+                    CI_ENVIRONMENT_URL=$(node-jq -r '.deploy_url' deploy_output_staging.json)
                     npx playwright test --reporter=html
                 '''
             }   
@@ -104,6 +103,7 @@ pipeline {
             }
         }
 
+    /*
         stage("Manual Approval"){
             steps{
                 timeout(time:1, unit:"MINUTES"){
@@ -111,10 +111,12 @@ pipeline {
                 }
             }
         }
+    */
+
         stage('Netlify Production Deploy & Production E2E Test') {
             agent {
                 docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+                    image 'my-node-image'
                     reuseNode true
                 }
             }
@@ -124,10 +126,8 @@ pipeline {
             steps {
                 sh '''
                     echo "Inside Netlify - Production"
-                    npm install netlify-cli
-                    node_modules/.bin/netlify --version
-                    node_modules/.bin/netlify status
-                    node_modules/.bin/netlify deploy --prod --dir=build
+                    netlify status
+                    netlify deploy --prod --dir=build
                     echo "Inside Netlify Prod - Testing"
                     npx playwright test --reporter=html
                 '''
