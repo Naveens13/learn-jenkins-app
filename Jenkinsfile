@@ -102,25 +102,14 @@ pipeline {
             }
         }
 
-        stage('Netlify Production Deploy') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
+        stage("Manual Approval"){
+            steps{
+                timeout(time:1, unit:"MINUTES"){
+                    input message: "Ready for Production Deployment" , ok: "Proceed"
                 }
             }
-            steps {
-                sh '''
-                    echo "Inside Netlify - Production"
-                    npm install netlify-cli
-                    node_modules/.bin/netlify --version
-                    node_modules/.bin/netlify status
-                    node_modules/.bin/netlify deploy --prod --dir=build
-                '''
-            }
         }
-
-        stage('Production E2E Test') {
+        stage('Netlify Production Deploy & Production E2E Test') {
             agent {
                 docker {
                     image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
@@ -132,6 +121,12 @@ pipeline {
             }
             steps {
                 sh '''
+                    echo "Inside Netlify - Production"
+                    npm install netlify-cli
+                    node_modules/.bin/netlify --version
+                    node_modules/.bin/netlify status
+                    node_modules/.bin/netlify deploy --prod --dir=build
+                    echo "Inside Netlify Prod - Testing"
                     npx playwright test --reporter=html
                 '''
             }   
