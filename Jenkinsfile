@@ -8,10 +8,12 @@ pipeline {
     stages {
 
         stage ('Docker Build') {
-            sh ''' 
-                echo "Building Docker image"
-                docker build -t my-node-image .
-            '''
+            steps {
+                sh ''' 
+                    echo "Building Docker image"
+                    docker build -t my-node-image .
+                '''
+            }
         }
 
         stage('Build') {
