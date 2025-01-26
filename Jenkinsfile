@@ -7,7 +7,7 @@ pipeline {
     }
     stages {
 
-        /*
+
         stage('Build') {
             agent {
                 docker {
@@ -27,6 +27,7 @@ pipeline {
             }
         }
 
+        /*
         stage('Test') {
             parallel { 
                 stage('Unit Test') {
@@ -87,7 +88,7 @@ pipeline {
             }
             steps {
                 sh '''
-                    echo "$BUILD_ID"
+                    echo "Build id is: $REACT_APP_VERSION"
                     npm install netlify-cli node-jq
                     node_modules/.bin/netlify --version
                     node_modules/.bin/netlify status
