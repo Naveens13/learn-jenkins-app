@@ -87,6 +87,7 @@ pipeline {
             }
             steps {
                 sh '''
+                    echo "$BUILD_ID"
                     npm install netlify-cli node-jq
                     node_modules/.bin/netlify --version
                     node_modules/.bin/netlify status
