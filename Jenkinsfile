@@ -14,10 +14,15 @@ pipeline {
                     args "--entrypoint=''"
                 }
             }
+            environment{
+                AWS_S3_BUCKET = "jenkinsdemobucket10929348"
+            }
             steps {
                 withCredentials([usernamePassword(credentialsId: 'AWS Account Jenkins', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                     sh '''
                         aws --version
+                        echo "This is sample file for testing" > sample_file.txt
+                        aws s3 cp sample_file.txt s3://$AWS_S3_BUCKET/index.html
                         aws s3 ls
                     '''
                 }
