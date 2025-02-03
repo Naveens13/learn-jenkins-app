@@ -6,7 +6,20 @@ pipeline {
         REACT_APP_VERSION = "1.0.$BUILD_ID"
     }
     stages {
-
+         
+        stage ('AWS CLI'){
+            agent{
+                docker{
+                    image 'amazon/aws-cli'
+                    args "--endpoint-url=''"
+                }
+            }
+            steps{
+                sh ''' 
+                    aws --version
+                '''
+            }
+        }
         stage ('Docker Build') {
             steps {
                 sh ''' 
