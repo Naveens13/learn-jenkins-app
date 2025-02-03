@@ -7,15 +7,15 @@ pipeline {
     }
     stages {
          
-        stage ('AWS CLI'){
-            agent{
-                docker{
+        stage('AWS') {
+            agent {
+                docker {
                     image 'amazon/aws-cli'
-                    args "--endpoint=''"
+                    args "--entrypoint=''"
                 }
             }
-            steps{
-                sh ''' 
+            steps {
+                sh '''
                     aws --version
                 '''
             }
