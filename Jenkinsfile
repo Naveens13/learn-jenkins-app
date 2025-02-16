@@ -49,7 +49,6 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'AWS Account Jenkins', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                     sh '''
                         aws --version
-                        // aws s3 sync build s3://$AWS_S3_BUCKET
                         aws ecs register-task-definition --cli-input-json file:aws/task-defenition.json
 
                     '''
