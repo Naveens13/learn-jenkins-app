@@ -5,6 +5,9 @@ pipeline {
         NETLIFY_AUTH_TOKEN = credentials('netlify_access_token')
         REACT_APP_VERSION = "1.0.$BUILD_ID"
         AWS_DEFAULT_REGION = "us-east-1"
+        AWS_CLUSTER = "Jenkins_Cluster_prod"
+        AWS_SERVICE = "JenkinsNginxSite"
+        AWS_FILE_PATH = "aws/task-defenition.json"
     }
     stages {
          
@@ -49,8 +52,11 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'AWS Account Jenkins', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
                     sh '''
                         aws --version
-                        aws ecs register-task-definition --cli-input-json file://aws/task-defenition.json
-
+                        yum install jq -y
+                        LATEST_VERSION = $(aws ecs register-task-definition --cli-input-json file://aws/task-defenition.json | jq '.taskDefinition.revision')
+                        echo $LATEST_VERSION
+                        aws ecs update-service --cluster $AWS_CLUSTER --service $AWS_SERVICE --task-definition $AWS_CLUSTER:$LATEST_VERSION
+                        aws ecs wait services-stable --cluster $AWS_CLUSTER --services $AWS_SERVICE
                     '''
                 }
                 
